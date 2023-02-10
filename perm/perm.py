@@ -55,6 +55,9 @@ if re_result is None:
 as_of_date = re_result.groups()[0]
 prev_as_of_date = get_previous()
 
+print("old as_of_date: {}".format(prev_as_of_date))
+print("new as_of_date: {}".format(as_of_date))
+
 if as_of_date != prev_as_of_date:
     write_current(as_of_date)
     message = "The website {} has been updated!".format(URL)
