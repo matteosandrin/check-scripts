@@ -7,9 +7,12 @@ import sys
 
 current_dir, _ = os.path.split(__file__)
 CONFIG_PATH = os.path.join(current_dir, "config.json")
+EXAMPLE_CONFIG_PATH = os.path.join(current_dir, "config.example.json")
 
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
+    if os.path.exists(EXAMPLE_CONFIG_PATH):
+        print("please rename 'config.example.json' to 'config.json' and fill in the config parameters", file=sys.stderr)
     exit(1)
 
 CONFIG = json.load(open(CONFIG_PATH))
