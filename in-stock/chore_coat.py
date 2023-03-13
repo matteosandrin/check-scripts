@@ -6,7 +6,7 @@ import re
 
 current_dir, _ = os.path.split(__file__)
 CONFIG_PATH = os.path.join(current_dir, "config.json")
-URL = "https://us.urbanexcess.com/products/le-laboureur-moleskin-work-jacket-navy?variant=33058542217"
+URL = "https://us.urbanexcess.com/products/le-laboureur-moleskin-work-jacket-navy?variant=33058542281"
 
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
