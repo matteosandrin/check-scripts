@@ -83,19 +83,20 @@ username_status = [
     ("mattsa", LookupResponse.USERNAME_TAKEN),
     ("matteos", LookupResponse.USERNAME_SUSPENDED),
 ]
-        
-for username, old_status in username_status:
-    print("Checking username \"{}\"...".format(username))
-    new_status = lookup(username)
-    if new_status == LookupResponse.RATE_LIMIT_EXCEEDED:
-        print("Rate limit exceed. Aborting!")
-        notify("Rate limit exceeded on the Twitter api")
-        printf("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
-        exit(1)
-    if new_status != old_status:
-        print("New status!", new_status)
-        notify("The username \"{}\" is now {}".format(
-            username, lookupResponseEnumToString(new_status)))
-    else:
-        print(new_status)
-    time.sleep(2)
+
+if __name__ == "__main__":        
+    for username, old_status in username_status:
+        print("Checking username \"{}\"...".format(username))
+        new_status = lookup(username)
+        if new_status == LookupResponse.RATE_LIMIT_EXCEEDED:
+            print("Rate limit exceed. Aborting!")
+            notify("Rate limit exceeded on the Twitter api")
+            printf("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
+            exit(1)
+        if new_status != old_status:
+            print("New status!", new_status)
+            notify("The username \"{}\" is now {}".format(
+                username, lookupResponseEnumToString(new_status)))
+        else:
+            print(new_status)
+        time.sleep(2)
