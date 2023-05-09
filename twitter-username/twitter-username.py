@@ -57,8 +57,8 @@ def lookup(username):
 
 def notify(message):
     params = {
-        "token" : "***REMOVED***",
-        "user" : "***REMOVED***",
+        "token" : CONFIG["pushover_token"],
+        "user" : CONFIG["pushover_user"],
         "message" : message
     }
     requests.post("https://api.pushover.net/1/messages.json", params=params)
