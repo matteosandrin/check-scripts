@@ -81,7 +81,7 @@ username_status = [
     ("masand", LookupResponse.USERNAME_TAKEN),
     ("msandr", LookupResponse.USERNAME_TAKEN),
     ("mattsa", LookupResponse.USERNAME_TAKEN),
-    ("matteos", LookupResponse.USERNAME_SUSPENDED),
+    ("matteos", LookupResponse.USERNAME_AVAILABLE),
 ]
 
 if __name__ == "__main__":        
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         if new_status == LookupResponse.RATE_LIMIT_EXCEEDED:
             print("Rate limit exceed. Aborting!")
             notify("Rate limit exceeded on the Twitter api")
-            printf("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
+            print("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
             exit(1)
         if new_status != old_status:
             print("New status!", new_status)
