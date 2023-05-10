@@ -91,7 +91,7 @@ if __name__ == "__main__":
         if new_status == LookupResponse.RATE_LIMIT_EXCEEDED:
             print("Rate limit exceed. Aborting!")
             notify("Rate limit exceeded on the Twitter api")
-            printf("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
+            print("ERROR: RATE_LIMIT_EXCEEDED", file=sys.stderr)
             exit(1)
         if new_status != old_status:
             print("New status!", new_status)
