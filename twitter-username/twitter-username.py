@@ -81,7 +81,7 @@ username_status = [
     ("masand", LookupResponse.USERNAME_TAKEN),
     ("msandr", LookupResponse.USERNAME_TAKEN),
     ("mattsa", LookupResponse.USERNAME_TAKEN),
-    ("matteos", LookupResponse.USERNAME_SUSPENDED),
+    ("matteos", LookupResponse.USERNAME_AVAILABLE),
 ]
 
 if __name__ == "__main__":        
