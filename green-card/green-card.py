@@ -23,7 +23,7 @@ def get_previous(path=PREV_PATH):
     if os.path.exists(path):
         file_ptr = open(path)
         return file_ptr.read().strip()
-    print("WARNING: did not fine previous value. Returning empty")
+    print("WARNING: did not find previous value. Returning empty")
     return ""
 
 def write_current(data, path=PREV_PATH):
