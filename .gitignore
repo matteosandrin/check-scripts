@@ -1,4 +1,4 @@
 */config.json
 perm/as_of_date.txt
-green-card/case_status.txt
-green-card/case_status_*.txt
+uscis-status/case_status.txt
+uscis-status/case_status_*.txt
