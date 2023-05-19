@@ -19,6 +19,12 @@ if not os.path.exists(CONFIG_PATH):
 
 CONFIG = json.load(open(CONFIG_PATH))
 
+if len(sys.argv) < 2:
+    print("ERROR: receipt number is missing" ,file=sys.stderr)
+    exit(1)
+
+RECEIPT_NUMBER = sys.argv[1]
+
 def get_previous(path=PREV_PATH):
     if os.path.exists(path):
         file_ptr = open(path)
@@ -46,7 +52,7 @@ response = requests.post(
         "changeLocale" : "",
         "completedActionsCurrentPage" : "0",
         "upcomingActionsCurrentPage" : "0",
-        "appReceiptNum" : CONFIG["receipt_number"],
+        "appReceiptNum" : RECEIPT_NUMBER,
         "caseStatusSearchBtn" : "CHECK STATUS",
     },
     headers={
