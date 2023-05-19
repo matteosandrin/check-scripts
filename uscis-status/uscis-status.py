@@ -1,16 +1,30 @@
 from datetime import datetime
 from lxml import html
+import argparse
 import requests
 import os.path
 import json
 import sys
 import re
 
-if len(sys.argv) < 2:
-    print("ERROR: receipt number is missing", file=sys.stderr)
-    exit(1)
-
-RECEIPT_NUMBER = sys.argv[1]
+parser = argparse.ArgumentParser(description="Check the status of a USCIS case")
+parser.add_argument(
+    "receipt_num",
+    type=str,
+    help="The receipt number of the USCIS case",
+    metavar="receipt_num",
+    nargs=1,
+)
+parser.add_argument(
+    "label",
+    type=str,
+    help="The human-friendly name of the USCIS case",
+    metavar="label",
+    nargs=1,
+)
+args = parser.parse_args()
+RECEIPT_NUMBER = args.receipt_num[0]
+CASE_LABEL = args.label[0]
 
 current_dir, _ = os.path.split(__file__)
 URL = "https://egov.uscis.gov/casestatus/mycasestatus.do"
@@ -106,8 +120,8 @@ if (
 ):
     print("There is a new update!")
     write_current(new_status)
-    message = """<b>Updated green card status: {status}.</b> {description}""".format(
-        **new_status
+    message = """<b>Update on "{}": {}.</b> {}""".format(
+        CASE_LABEL, new_status["status"], new_status["description"]
     )
     notify(message)
 else:
