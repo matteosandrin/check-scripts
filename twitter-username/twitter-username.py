@@ -12,10 +12,14 @@ EXAMPLE_CONFIG_PATH = os.path.join(current_dir, "config.example.json")
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
     if os.path.exists(EXAMPLE_CONFIG_PATH):
-        print("please rename 'config.example.json' to 'config.json' and fill in the config parameters", file=sys.stderr)
+        print(
+            "please rename 'config.example.json' to 'config.json' and fill in the config parameters",
+            file=sys.stderr,
+        )
     exit(1)
 
 CONFIG = json.load(open(CONFIG_PATH))
+
 
 class LookupResponse(Enum):
     UNKNOWN = 0
@@ -23,6 +27,7 @@ class LookupResponse(Enum):
     USERNAME_TAKEN = 2
     USERNAME_AVAILABLE = 3
     USERNAME_SUSPENDED = 4
+
 
 def lookup(username):
     url = "https://api.twitter.com/2/users/by"
@@ -34,9 +39,7 @@ def lookup(username):
         "Authorization": "Bearer {}".format(CONFIG["twitter_token"]),
     }
 
-    response = requests.request(
-        "GET", url, headers=headers, params=querystring
-    )
+    response = requests.request("GET", url, headers=headers, params=querystring)
 
     if response.status_code == 429:
         return LookupResponse.RATE_LIMIT_EXCEEDED
@@ -55,13 +58,15 @@ def lookup(username):
     else:
         return LookupResponse.UNKNOWN
 
+
 def notify(message):
     params = {
-        "token" : CONFIG["pushover_token"],
-        "user" : CONFIG["pushover_user"],
-        "message" : message
+        "token": CONFIG["pushover_token"],
+        "user": CONFIG["pushover_user"],
+        "message": message,
     }
     requests.post("https://api.pushover.net/1/messages.json", params=params)
+
 
 def lookupResponseEnumToString(e):
     if e == LookupResponse.USERNAME_TAKEN:
@@ -84,9 +89,9 @@ username_status = [
     ("matteos", LookupResponse.USERNAME_AVAILABLE),
 ]
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
     for username, old_status in username_status:
-        print("Checking username \"{}\"...".format(username))
+        print('Checking username "{}"...'.format(username))
         new_status = lookup(username)
         if new_status == LookupResponse.RATE_LIMIT_EXCEEDED:
             print("Rate limit exceed. Aborting!")
@@ -95,8 +100,11 @@ if __name__ == "__main__":
             exit(1)
         if new_status != old_status:
             print("New status!", new_status)
-            notify("The username \"{}\" is now {}".format(
-                username, lookupResponseEnumToString(new_status)))
+            notify(
+                'The username "{}" is now {}'.format(
+                    username, lookupResponseEnumToString(new_status)
+                )
+            )
         else:
             print(new_status)
         time.sleep(2)
