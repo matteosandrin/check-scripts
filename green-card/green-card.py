@@ -7,7 +7,7 @@ import sys
 import re
 
 if len(sys.argv) < 2:
-    print("ERROR: receipt number is missing" ,file=sys.stderr)
+    print("ERROR: receipt number is missing", file=sys.stderr)
     exit(1)
 
 RECEIPT_NUMBER = sys.argv[1]
@@ -21,19 +21,21 @@ PREV_PATH = os.path.join(current_dir, "case_status_{}.json".format(RECEIPT_NUMBE
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
     if os.path.exists(EXAMPLE_CONFIG_PATH):
-        print("please rename 'config.example.json' to 'config.json' and fill in the config parameters", file=sys.stderr)
+        print(
+            "please rename 'config.example.json' to 'config.json' and fill in the config parameters",
+            file=sys.stderr,
+        )
     exit(1)
 
 CONFIG = json.load(open(CONFIG_PATH))
+
 
 def get_previous(path=PREV_PATH):
     if os.path.exists(path):
         return json.load(open(path))
     print("WARNING: did not find previous value. Returning empty")
-    return [{
-        "status" : "",
-        "description" : ""
-    }]
+    return [{"status": "", "description": ""}]
+
 
 def write_current(data, path=PREV_PATH):
     history = []
@@ -43,31 +45,37 @@ def write_current(data, path=PREV_PATH):
     file_ptr = open(path, "w")
     json.dump(history, file_ptr, indent=4)
 
+
 def notify(message):
     params = {
-        "token" : CONFIG["pushover_token"],
-        "user" : CONFIG["pushover_user"],
-        "message" : message,
-        "html" : 1
+        "token": CONFIG["pushover_token"],
+        "user": CONFIG["pushover_user"],
+        "message": message,
+        "html": 1,
     }
     requests.post("https://api.pushover.net/1/messages.json", params=params)
 
-print("Downloading \"{}\" ...".format(URL))
+
+print('Downloading "{}" ...'.format(URL))
 response = requests.post(
     URL,
     data={
-        "changeLocale" : "",
-        "completedActionsCurrentPage" : "0",
-        "upcomingActionsCurrentPage" : "0",
-        "appReceiptNum" : RECEIPT_NUMBER,
-        "caseStatusSearchBtn" : "CHECK STATUS",
+        "changeLocale": "",
+        "completedActionsCurrentPage": "0",
+        "upcomingActionsCurrentPage": "0",
+        "appReceiptNum": RECEIPT_NUMBER,
+        "caseStatusSearchBtn": "CHECK STATUS",
     },
     headers={
-        "user-agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-    })
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+    },
+)
 
 if response.status_code != 200:
-    print("ERROR: {} replied with status code {}".format(URL, response.status_code), file=sys.stderr)
+    print(
+        "ERROR: {} replied with status code {}".format(URL, response.status_code),
+        file=sys.stderr,
+    )
     exit(1)
 
 tree = html.document_fromstring(response.text)
@@ -81,9 +89,9 @@ status_container = status_container[0]
 status = status_container.cssselect("h1")[0].text_content().strip()
 description = status_container.cssselect("p")[0].text_content().strip()
 new_status = {
-    "status" : status,
-    "description" : description,
-    "date" : datetime.now().isoformat()
+    "status": status,
+    "description": description,
+    "date": datetime.now().isoformat(),
 }
 
 history = get_previous()
@@ -92,11 +100,15 @@ old_status = history[-1]
 print("old case status: \n{status}\n{description}\n".format(**old_status))
 print("new case status: \n{status}\n{description}\n".format(**new_status))
 
-if old_status["status"] != new_status["status"] or old_status["description"] != new_status["description"]:
+if (
+    old_status["status"] != new_status["status"]
+    or old_status["description"] != new_status["description"]
+):
     print("There is a new update!")
     write_current(new_status)
     message = """<b>Updated green card status: {status}.</b> {description}""".format(
-        **new_status)
+        **new_status
+    )
     notify(message)
 else:
     print("No update. Exiting!")
