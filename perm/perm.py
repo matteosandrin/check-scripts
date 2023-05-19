@@ -13,10 +13,14 @@ PREV_PATH = os.path.join(current_dir, "as_of_date.txt")
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
     if os.path.exists(EXAMPLE_CONFIG_PATH):
-        print("please rename 'config.example.json' to 'config.json' and fill in the config parameters", file=sys.stderr)
+        print(
+            "please rename 'config.example.json' to 'config.json' and fill in the config parameters",
+            file=sys.stderr,
+        )
     exit(1)
 
 CONFIG = json.load(open(CONFIG_PATH))
+
 
 def get_previous(path=PREV_PATH):
     if os.path.exists(path):
@@ -25,31 +29,39 @@ def get_previous(path=PREV_PATH):
     print("WARNING: did not fine previous date value. Returning empty")
     return ""
 
+
 def write_current(data, path=PREV_PATH):
     file_ptr = open(path, "w")
     file_ptr.write(data)
 
+
 def notify(message):
     params = {
-        "token" : CONFIG["pushover_token"],
-        "user" : CONFIG["pushover_user"],
-        "message" : message
+        "token": CONFIG["pushover_token"],
+        "user": CONFIG["pushover_user"],
+        "message": message,
     }
     requests.post("https://api.pushover.net/1/messages.json", params=params)
 
 
-print("Downloading \"{}\" ...".format(URL))
+print('Downloading "{}" ...'.format(URL))
 response = requests.get(
     URL,
     headers={
-        "user-agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-    })
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+    },
+)
 
 if response.status_code != 200:
-    print("ERROR: {} replied with status code {}".format(URL, response.status_code), file=sys.stderr)
+    print(
+        "ERROR: {} replied with status code {}".format(URL, response.status_code),
+        file=sys.stderr,
+    )
     exit(1)
 
-re_result = re.search(r"PERM Processing Times.*(\d{1,2}\/\d{1,2}\/\d{4})", response.text)
+re_result = re.search(
+    r"PERM Processing Times.*(\d{1,2}\/\d{1,2}\/\d{4})", response.text
+)
 
 if re_result is None:
     print("ERROR: cannot find regular expression", file=sys.stderr)
