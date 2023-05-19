@@ -1,3 +1,4 @@
+from datetime import datetime
 from lxml import html
 import requests
 import os.path
@@ -5,11 +6,17 @@ import json
 import sys
 import re
 
+if len(sys.argv) < 2:
+    print("ERROR: receipt number is missing" ,file=sys.stderr)
+    exit(1)
+
+RECEIPT_NUMBER = sys.argv[1]
+
 current_dir, _ = os.path.split(__file__)
 URL = "https://egov.uscis.gov/casestatus/mycasestatus.do"
 CONFIG_PATH = os.path.join(current_dir, "config.json")
 EXAMPLE_CONFIG_PATH = os.path.join(current_dir, "config.example.json")
-PREV_PATH = os.path.join(current_dir, "case_status.txt")
+PREV_PATH = os.path.join(current_dir, "case_status_{}.json".format(RECEIPT_NUMBER))
 
 if not os.path.exists(CONFIG_PATH):
     print("ERROR: config.json file not found", file=sys.stderr)
@@ -19,22 +26,22 @@ if not os.path.exists(CONFIG_PATH):
 
 CONFIG = json.load(open(CONFIG_PATH))
 
-if len(sys.argv) < 2:
-    print("ERROR: receipt number is missing" ,file=sys.stderr)
-    exit(1)
-
-RECEIPT_NUMBER = sys.argv[1]
-
 def get_previous(path=PREV_PATH):
     if os.path.exists(path):
-        file_ptr = open(path)
-        return file_ptr.read().strip()
+        return json.load(open(path))
     print("WARNING: did not find previous value. Returning empty")
-    return ""
+    return [{
+        "status" : "",
+        "description" : ""
+    }]
 
 def write_current(data, path=PREV_PATH):
+    history = []
+    if os.path.exists(path):
+        history = get_previous()
+    history.append(data)
     file_ptr = open(path, "w")
-    file_ptr.write(data)
+    json.dump(history, file_ptr, indent=4)
 
 def notify(message):
     params = {
@@ -71,20 +78,25 @@ if len(status_container) == 0:
     exit(1)
 
 status_container = status_container[0]
-status_short = status_container.cssselect("h1")[0].text_content().strip()
-status_long = status_container.cssselect("p")[0].text_content().strip()
+status = status_container.cssselect("h1")[0].text_content().strip()
+description = status_container.cssselect("p")[0].text_content().strip()
+new_status = {
+    "status" : status,
+    "description" : description,
+    "date" : datetime.now().isoformat()
+}
 
-prev_case_status = get_previous()
+history = get_previous()
+old_status = history[-1]
 
-print("old case status: {}".format(prev_case_status))
-print("new case status: {}".format(status_short))
+print("old case status: \n{status}\n{description}\n".format(**old_status))
+print("new case status: \n{status}\n{description}\n".format(**new_status))
 
-if status_short != prev_case_status:
-    write_current(status_short)
-    message = """<b>Updated green card status: {}.</b> {}""".format(
-        status_short, status_long)
-    print(status_short)
-    print(status_long)
+if old_status["status"] != new_status["status"] or old_status["description"] != new_status["description"]:
+    print("There is a new update!")
+    write_current(new_status)
+    message = """<b>Updated green card status: {status}.</b> {description}""".format(
+        **new_status)
     notify(message)
 else:
     print("No update. Exiting!")
