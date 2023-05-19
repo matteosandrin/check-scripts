@@ -70,6 +70,7 @@ def notify(message):
     requests.post("https://api.pushover.net/1/messages.json", params=params)
 
 
+print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
 print('Downloading "{}" ...'.format(URL))
 response = requests.post(
     URL,
