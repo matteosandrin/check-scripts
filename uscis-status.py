@@ -1,5 +1,4 @@
 from datetime import datetime
-from lxml import html
 import argparse
 import requests
 import os.path
@@ -28,20 +27,13 @@ RECEIPT_NUMBER = args.receipt_num[0]
 CASE_LABEL = args.label[0]
 
 current_dir, _ = os.path.split(__file__)
-URL = "https://egov.uscis.gov/casestatus/mycasestatus.do"
+URL = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
 config = util.get_config("uscis-status")
 
 print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
 print('Downloading "{}" ...'.format(URL))
-response = requests.post(
+response = requests.get(
     URL,
-    data={
-        "changeLocale": "",
-        "completedActionsCurrentPage": "0",
-        "upcomingActionsCurrentPage": "0",
-        "appReceiptNum": RECEIPT_NUMBER,
-        "caseStatusSearchBtn": "CHECK STATUS",
-    },
     headers={
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
     },
@@ -54,19 +46,11 @@ if response.status_code != 200:
     )
     exit(1)
 
-tree = html.document_fromstring(response.text)
-status_container = tree.cssselect(".uscis-seal > .appointment-sec > .rows.text-center")
+data = response.json()
 
-if len(status_container) == 0:
-    print("ERROR: could not find case status in page", file=sys.stderr)
-    exit(1)
-
-status_container = status_container[0]
-status = status_container.cssselect("h1")[0].text_content().strip()
-description = status_container.cssselect("p")[0].text_content().strip()
 new_status = {
-    "status": status,
-    "description": description,
+    "status": data['CaseStatusResponse']['detailsEng']['actionCodeText'],
+    "description": re.sub('<.*?>', '', data['CaseStatusResponse']['detailsEng']['actionCodeDesc']),
     "date": datetime.now().isoformat(),
 }
 
