@@ -1,0 +1,14 @@
+{
+  "COMMON": {
+    "pushover_token": "",
+    "pushover_user": ""
+  },
+  "perm": {
+    "pushover_token": "",
+    "pushover_user": ""
+  },
+  "uscis-status": {
+    "pushover_token": "",
+    "pushover_user": ""
+  }
+}

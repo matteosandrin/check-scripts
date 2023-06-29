@@ -1,4 +1,4 @@
-*/config.json
-perm/as_of_date.txt
-uscis-status/case_status.*
-uscis-status/case_status_*.*
+.DS_Store
+__pycache__
+config.json
+data

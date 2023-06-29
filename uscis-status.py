@@ -3,6 +3,7 @@ from lxml import html
 import argparse
 import requests
 import os.path
+import util
 import json
 import sys
 import re
@@ -28,47 +29,7 @@ CASE_LABEL = args.label[0]
 
 current_dir, _ = os.path.split(__file__)
 URL = "https://egov.uscis.gov/casestatus/mycasestatus.do"
-CONFIG_PATH = os.path.join(current_dir, "config.json")
-EXAMPLE_CONFIG_PATH = os.path.join(current_dir, "config.example.json")
-PREV_PATH = os.path.join(current_dir, "case_status_{}.json".format(RECEIPT_NUMBER))
-
-if not os.path.exists(CONFIG_PATH):
-    print("ERROR: config.json file not found", file=sys.stderr)
-    if os.path.exists(EXAMPLE_CONFIG_PATH):
-        print(
-            "please rename 'config.example.json' to 'config.json' and fill in the config parameters",
-            file=sys.stderr,
-        )
-    exit(1)
-
-CONFIG = json.load(open(CONFIG_PATH))
-
-
-def get_previous(path=PREV_PATH):
-    if os.path.exists(path):
-        return json.load(open(path))
-    print("WARNING: did not find previous value. Returning empty")
-    return [{"status": "", "description": ""}]
-
-
-def write_current(data, path=PREV_PATH):
-    history = []
-    if os.path.exists(path):
-        history = get_previous()
-    history.append(data)
-    file_ptr = open(path, "w")
-    json.dump(history, file_ptr, indent=4)
-
-
-def notify(message):
-    params = {
-        "token": CONFIG["pushover_token"],
-        "user": CONFIG["pushover_user"],
-        "message": message,
-        "html": 1,
-    }
-    requests.post("https://api.pushover.net/1/messages.json", params=params)
-
+config = util.get_config("uscis-status")
 
 print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
 print('Downloading "{}" ...'.format(URL))
@@ -109,7 +70,11 @@ new_status = {
     "date": datetime.now().isoformat(),
 }
 
-history = get_previous()
+prev_path = os.path.join(util.get_data_path(), "uscis-status-{}.json".format(RECEIPT_NUMBER))
+history = util.get_previous_json(prev_path, [{
+    "status" : "",
+    "description" : ""
+}])
 old_status = history[-1]
 
 print("old case status: \n{status}\n{description}\n".format(**old_status))
@@ -120,10 +85,10 @@ if (
     or old_status["description"] != new_status["description"]
 ):
     print("There is a new update!")
-    write_current(new_status)
+    util.write_current_list(new_status, prev_path)
     message = """<b>Update on "{}": {}.</b> {}""".format(
         CASE_LABEL, new_status["status"], new_status["description"]
     )
-    notify(message)
+    util.notify(message, config["pushover_token"], config["pushover_user"])
 else:
     print("No update. Exiting!")
