@@ -11,7 +11,7 @@ a bulletin is posted at [https://flag.dol.gov/processingtimes](), showing how
 long the wait for PERM is. This script checks that URL periodically and sends a
 notification when a new bulletin is published.
 
-## `uscis.py`
+## `uscis-status.py`
 
 For most immigration documents, USCIS provides a receipt number. This number can
 be used on the [https://egov.uscis.gov]() website to check the case status. This
