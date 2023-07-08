@@ -4,6 +4,7 @@ import requests
 import os.path
 import util
 import json
+import time
 import sys
 import re
 
@@ -25,6 +26,7 @@ parser.add_argument(
 args = parser.parse_args()
 RECEIPT_NUMBER = args.receipt_num[0]
 CASE_LABEL = args.label[0]
+RETRIES = 10
 
 current_dir, _ = os.path.split(__file__)
 URL = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
@@ -32,12 +34,23 @@ config = util.get_config("uscis-status")
 
 print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
 print('Downloading "{}" ...'.format(URL))
-response = requests.get(
-    URL,
-    headers={
-        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-    },
-)
+response = None
+for i in range(RETRIES):
+    print("Attempt {} of {}".format(i+1, RETRIES))
+    try:
+        response = requests.get(
+            URL,
+            headers={
+                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+            },
+        )
+        break
+    except Exception as e:
+        print("There was an error: {}".format(e), file=sys.stderr)
+        if (i == RETRIES-1):
+            raise Exception("ERROR: too many retries")
+        print("waiting and trying again...")
+        time.sleep(10)
 
 if response.status_code != 200:
     print(
