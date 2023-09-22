@@ -29,19 +29,33 @@ CASE_LABEL = args.label[0]
 RETRIES = 10
 
 current_dir, _ = os.path.split(__file__)
-URL = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
+URL_STEP_1 = "https://egov.uscis.gov/csol-api/ui-auth"
+URL_STEP_2 = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
 config = util.get_config("uscis-status")
 
 print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
-print('Downloading "{}" ...'.format(URL))
+print('Downloading "{}" ...'.format(URL_STEP_2))
 response = None
 for i in range(RETRIES):
     print("Attempt {} of {}".format(i+1, RETRIES))
     try:
-        response = requests.get(
-            URL,
+        auth_response = requests.get(
+            URL_STEP_1,
             headers={
-                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "Content-Type": "application/json",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin",
+            },
+        )
+        token = auth_response.json()["JwtResponse"]["accessToken"]
+        response = requests.get(
+            URL_STEP_2,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token,
             },
         )
         break
@@ -54,7 +68,7 @@ for i in range(RETRIES):
 
 if response.status_code != 200:
     print(
-        "ERROR: {} replied with status code {}".format(URL, response.status_code),
+        "ERROR: {} replied with status code {}".format(URL_STEP_2, response.status_code),
         file=sys.stderr,
     )
     exit(1)
