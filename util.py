@@ -70,3 +70,6 @@ def get_config(key):
         print("ERROR: Could not find config key \"{}\"".format(key))
         exit(1)
     return config[key]
+
+def get_user_agent():
+    return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"

@@ -10,5 +10,9 @@
   "uscis-status": {
     "pushover_token": "",
     "pushover_user": ""
+  },
+  "visa-bulletin": {
+    "pushover_token": "",
+    "pushover_user": ""
   }
 }
