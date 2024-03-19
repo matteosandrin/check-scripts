@@ -29,18 +29,19 @@ CASE_LABEL = args.label[0]
 RETRIES = 10
 
 current_dir, _ = os.path.split(__file__)
-URL_STEP_1 = "https://egov.uscis.gov/csol-api/ui-auth"
-URL_STEP_2 = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
+URL_AUTH = "https://egov.uscis.gov/csol-api/ui-auth"
+URL_STATUS = "https://egov.uscis.gov/csol-api/case-statuses/{}".format(RECEIPT_NUMBER)
+URL_HISTORY = "https://egov.uscis.gov/csol-api/case-history/{}/english".format(RECEIPT_NUMBER)
 config = util.get_config("uscis-status")
 
 print('Checking "{}", receipt number {}'.format(CASE_LABEL, RECEIPT_NUMBER))
-print('Downloading "{}" ...'.format(URL_STEP_2))
+print('Downloading "{}" ...'.format(URL_STATUS))
 response = None
 for i in range(RETRIES):
     print("Attempt {} of {}".format(i+1, RETRIES))
     try:
         auth_response = requests.get(
-            URL_STEP_1,
+            URL_AUTH,
             headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
                 "Content-Type": "application/json",
@@ -51,7 +52,7 @@ for i in range(RETRIES):
         )
         token = auth_response.json()["JwtResponse"]["accessToken"]
         response = requests.get(
-            URL_STEP_2,
+            URL_STATUS,
             headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
                 "Content-Type": "application/json",
@@ -68,7 +69,7 @@ for i in range(RETRIES):
 
 if response.status_code != 200:
     print(
-        "ERROR: {} replied with status code {}".format(URL_STEP_2, response.status_code),
+        "ERROR: {} replied with status code {}".format(URL_STATUS, response.status_code),
         file=sys.stderr,
     )
     exit(1)
